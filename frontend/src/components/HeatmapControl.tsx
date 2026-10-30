@@ -35,7 +35,7 @@ export default function HeatmapControl({
   }, [playing, hour, max, onHour])
 
   const label = hours[hour]
-    ? new Date(hours[hour]).toLocaleString(undefined, { weekday: 'short', hour: 'numeric' })
+    ? new Date(hours[hour]).toLocaleString(undefined, { weekday: 'short', hour: 'numeric', minute: '2-digit' })
     : '—'
 
   return (
