@@ -5,7 +5,7 @@ route options using the weather forecast **at the time the truck will actually r
 point**, applies the brief's wind/rain/snow and load rules, and recommends the route with
 the least dangerous weather, using travel time as the tie-breaker.
 
-- **Live app:** _add Render URL_
+- **Live app:** https://truck-routing-web-guik.onrender.com (API: https://truck-routing-api-tsm6.onrender.com/api/v1/health/). Free tier: the first request after idle can take about 50 s while the API wakes up.
 - **Walkthrough (Loom):** _add link_
 
 ## What it does
@@ -138,8 +138,9 @@ No configuration is needed. Copy `.env.example` to `.env` to override defaults.
 ## Deploy
 
 `render.yaml` is a Render Blueprint. Choose **New → Blueprint**, pick the repo, and it
-creates the API (gunicorn + whitenoise) and the static web app. If you rename the
-services, update `VITE_API_URL`, `DJANGO_ALLOWED_HOSTS` and `CORS_ALLOWED_ORIGINS`.
+creates the API (gunicorn + whitenoise) and the static web app. Render may add a random
+suffix to each URL. The API trusts its own hostname automatically; set `VITE_API_URL` and
+`CORS_ALLOWED_ORIGINS` to the URLs Render assigns.
 
 ## Known limits
 
