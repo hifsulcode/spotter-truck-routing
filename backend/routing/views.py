@@ -8,6 +8,7 @@ from . import heatmap, planner
 from .serializers import HeatmapSerializer, PlanSerializer
 from .services import geocode
 from .services.http import UpstreamError
+from .services.weather import SuppliedWeatherError, WeatherUnavailable
 
 log = logging.getLogger(__name__)
 
@@ -17,6 +18,27 @@ def upstream_failure(exc):
     return Response(
         {"detail": f"A data provider failed: {exc}. Please try again."},
         status=status.HTTP_502_BAD_GATEWAY,
+    )
+
+
+def weather_unavailable(exc):
+    """Hand the forecast requests to the client to run from its own IP."""
+    log.warning("Weather unavailable on the server, asking the client: %s", exc)
+    return Response(
+        {
+            "code": "weather_unavailable",
+            "detail": "The weather provider refused this server. Fetch these forecasts "
+            "and send them back as `weather`.",
+            "weather_requests": exc.requests,
+        },
+        status=status.HTTP_503_SERVICE_UNAVAILABLE,
+    )
+
+
+def bad_weather(exc):
+    return Response(
+        {"weather": [f"Supplied forecasts don't match this request: {exc}."]},
+        status=status.HTTP_400_BAD_REQUEST,
     )
 
 
@@ -52,7 +74,12 @@ class PlanView(APIView):
                 data["departure"],
                 data["load_lbs"],
                 int(data["interval_mi"]),
+                supplied_weather=data.get("weather"),
             )
+        except WeatherUnavailable as exc:
+            return weather_unavailable(exc)
+        except SuppliedWeatherError as exc:
+            return bad_weather(exc)
         except UpstreamError as exc:
             return upstream_failure(exc)
         return Response(result)
@@ -67,8 +94,13 @@ class HeatmapView(APIView):
         d = ser.validated_data
         try:
             result = heatmap.build(
-                d["south"], d["west"], d["north"], d["east"], d["start"], d["load_lbs"], d["grid"]
+                d["south"], d["west"], d["north"], d["east"], d["start"], d["load_lbs"], d["grid"],
+                supplied_weather=d.get("weather"),
             )
+        except WeatherUnavailable as exc:
+            return weather_unavailable(exc)
+        except SuppliedWeatherError as exc:
+            return bad_weather(exc)
         except UpstreamError as exc:
             return upstream_failure(exc)
         return Response(result)

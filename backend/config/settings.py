@@ -64,6 +64,9 @@ CORS_ALLOWED_ORIGINS = env_list(
 )
 
 # --- REST ---
+# A long 10-mile-checkpoint trip with browser-fetched forecasts is ~2 MB.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+
 REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],

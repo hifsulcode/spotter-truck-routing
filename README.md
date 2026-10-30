@@ -83,6 +83,8 @@ backend/   Django 5.2 + DRF (stateless, no database models)
 | `POST` | `/api/v1/heatmap/` | `{south, west, north, east, start, load_lbs, grid}` → 49 hourly risk frames |
 | `GET` | `/api/v1/health/` | Health check |
 
+`plan` and `heatmap` also accept an optional `weather` field; see the next section.
+
 ### Data providers
 
 All providers are free and need no API keys.
@@ -93,6 +95,20 @@ All providers are free and need no API keys.
 | Routing fallback | **OSRM** | Used for trips over Valhalla's public 1,500 km limit, or if Valhalla errors. Times are for cars. |
 | Weather | **Open-Meteo** hourly forecast | Wind in mph, rain and snowfall in inches; values are per-hour amounts, i.e. in/h |
 | Geocoding | **Photon** (OpenStreetMap) | Place search |
+
+**When a provider refuses the server.** Open-Meteo's free tier is limited per IP
+address, and free hosts such as Render share outbound IPs between many apps, so the
+server's daily quota can be used up by strangers. Photon also refuses some cloud IPs. In
+that case:
+
+- `plan` and `heatmap` reply `503 {"code": "weather_unavailable", "weather_requests": [...]}`
+  with the exact Open-Meteo queries they need.
+- The browser runs those queries from the viewer's own IP and posts the same request
+  again with the responses as `weather`.
+- The API checks that every forecast matches a requested location, then scores and ranks
+  exactly as before. Place search falls back to calling Photon from the browser.
+
+Routing, ETAs, risk rules and ranking always run on the server.
 
 **Three routes, always.** Public routing engines often return fewer than three
 alternatives, especially for long trips. The API fills the gap with detours through
@@ -124,7 +140,7 @@ fastest route.
 cd backend
 python3 -m venv .venv && . .venv/bin/activate   # or: virtualenv .venv
 pip install -r requirements.txt
-python manage.py test        # 27 tests
+python manage.py test        # 34 tests
 python manage.py runserver   # http://localhost:8000
 
 # Web

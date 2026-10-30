@@ -65,7 +65,7 @@ def _explain(best, others):
     return f"{best['name']} recommended: " + "; ".join(parts) + "."
 
 
-def plan_trip(origin, destination, departure, load_lbs, interval_mi):
+def plan_trip(origin, destination, departure, load_lbs, interval_mi, supplied_weather=None):
     """Build every route option with weather-at-ETA checkpoints and rank them."""
     options = directions.get_route_options(
         (origin["lat"], origin["lon"]), (destination["lat"], destination["lon"]), load_lbs
@@ -74,7 +74,9 @@ def plan_trip(origin, destination, departure, load_lbs, interval_mi):
     sampled = [sample_checkpoints(o.points, o.vertex_seconds, interval_mi) for o in options]
     all_points = [(c.lat, c.lon) for cps in sampled for c in cps]
     latest = max(o.duration_s for o in options)
-    series = weather.forecast(all_points, departure, departure + timedelta(seconds=latest))
+    series = weather.forecast(
+        all_points, departure, departure + timedelta(seconds=latest), supplied=supplied_weather
+    )
 
     routes, cursor = [], 0
     for idx, (option, cps) in enumerate(zip(options, sampled)):

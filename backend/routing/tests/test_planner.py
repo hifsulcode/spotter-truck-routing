@@ -35,7 +35,7 @@ class RankingTests(SimpleTestCase):
              mock.patch.object(
                  planner.weather,
                  "forecast",
-                 side_effect=lambda pts, s, e: series_for(pts, s, e, storm_lon),
+                 side_effect=lambda pts, s, e, **kw: series_for(pts, s, e, storm_lon),
              ):
             return planner.plan_trip(
                 {"label": "A", "lat": 30.0, "lon": -97.0},
@@ -96,7 +96,7 @@ class ApiTests(SimpleTestCase):
         with mock.patch.object(planner.directions, "get_route_options",
                                return_value=[route(-97.0), route(-96.9, mph=50)]), \
              mock.patch.object(planner.weather, "forecast",
-                               side_effect=lambda p, s, e: series_for(p, s, e)):
+                               side_effect=lambda p, s, e, **kw: series_for(p, s, e)):
             resp = self.client.post(
                 "/api/v1/plan/",
                 {

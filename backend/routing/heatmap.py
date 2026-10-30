@@ -25,10 +25,12 @@ def grid_points(south, west, north, east, size):
     ]
 
 
-def build(south, west, north, east, start, load_lbs, size=14):
+def build(south, west, north, east, start, load_lbs, size=14, supplied_weather=None):
     size = max(4, min(MAX_GRID, size))
     points = grid_points(south, west, north, east, size)
-    series = weather.forecast(points, start, start + timedelta(hours=HOURS))
+    series = weather.forecast(
+        points, start, start + timedelta(hours=HOURS), supplied=supplied_weather
+    )
 
     frames, wind = [], []
     for h in range(HOURS + 1):

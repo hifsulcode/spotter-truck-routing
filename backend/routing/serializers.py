@@ -40,12 +40,20 @@ def _validate_departure(value):
     return value
 
 
+def weather_field():
+    """Open-Meteo responses the browser fetched after a `weather_unavailable` reply."""
+    return serializers.ListField(
+        child=serializers.JSONField(), required=False, allow_empty=False, max_length=40
+    )
+
+
 class PlanSerializer(serializers.Serializer):
     origin = PlaceField()
     destination = PlaceField()
     departure = serializers.DateTimeField(validators=[_validate_departure])
     load_lbs = serializers.FloatField(min_value=0, max_value=200_000)
     interval_mi = serializers.ChoiceField(choices=[10, 25, 50], default=25)
+    weather = weather_field()
 
 
 class HeatmapSerializer(serializers.Serializer):
@@ -56,6 +64,7 @@ class HeatmapSerializer(serializers.Serializer):
     start = serializers.DateTimeField(validators=[_validate_departure])
     load_lbs = serializers.FloatField(min_value=0, max_value=200_000)
     grid = serializers.IntegerField(min_value=4, max_value=24, default=14)
+    weather = weather_field()
 
     def validate(self, attrs):
         if attrs["north"] <= attrs["south"] or attrs["east"] <= attrs["west"]:
