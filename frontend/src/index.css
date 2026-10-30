@@ -1,0 +1,31 @@
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+/* The heatmap is a tiny image stretched over the map; let the browser blend
+   neighbouring cells smoothly instead of drawing hard pixels. */
+.heat-overlay {
+  image-rendering: auto;
+  filter: blur(6px);
+  pointer-events: none;
+}
+
+/* Mute the basemap so risk colours on routes and the heatmap stand out. */
+.base-tiles {
+  filter: grayscale(0.85) brightness(1.05);
+}
+
+.leaflet-tooltip.route-label {
+  background: #0d1b2a;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  padding: 2px 8px;
+}
+
+.leaflet-tooltip.route-label::before {
+  display: none;
+}
